@@ -27,7 +27,7 @@ describe('webRecorder', () => {
       });
       return Promise.resolve(noop);
     };
-    return webRecorder(piece, { pieceConfig });
+    return webRecorder(piece, pieceConfig);
   });
   it('should return a promise that resolves with an audioBuffer of the recording', () => {
     const piece = () => Promise.resolve(noop);

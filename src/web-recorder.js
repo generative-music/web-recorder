@@ -2,21 +2,22 @@ import Tone from 'tone';
 
 const webRecorder = (
   piece,
-  {
-    pieceConfig = {},
-    recordingConfig = {
-      lengthS: 0.1,
-      fadeInS: 0,
-      fadeOutS: 0,
-    },
-  } = {}
+  pieceConfig = {},
+  recordingConfig = {
+    lengthS: 0,
+    fadeInS: 0,
+    fadeOutS: 0,
+  }
 ) => {
+  Object.assign(pieceConfig, { audioContext: Tone.Context });
+  if (Tone.context !== pieceConfig.audioContext) {
+    Tone.setContext(pieceConfig);
+  }
   const streamDestination = Tone.context.createMediaStreamDestination();
   const { lengthS } = recordingConfig;
   return piece(
     Object.assign({}, pieceConfig, {
       destination: streamDestination,
-      audioContext: Tone.context,
     })
   ).then(
     cleanup =>
