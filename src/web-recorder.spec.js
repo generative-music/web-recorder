@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import expect from 'chai/interface/expect';
+import Tone from 'tone';
 import webRecorder from './web-recorder';
 
 //eslint-disable-next-line no-empty-function
@@ -12,9 +13,12 @@ describe('webRecorder', () => {
       piece.called = true;
       return Promise.resolve(noop);
     };
-    return webRecorder(piece).then(() => {
-      expect(piece).to.have.property('called', true);
-    });
+    return new Promise(resolve =>
+      webRecorder(piece).subscribe(() => {
+        expect(piece).to.have.property('called', true);
+        resolve();
+      })
+    );
   });
   it('should pass pieceConfig to the piece', () => {
     const pieceConfig = {
@@ -27,21 +31,53 @@ describe('webRecorder', () => {
       });
       return Promise.resolve(noop);
     };
-    return webRecorder(piece, pieceConfig);
-  });
-  it('should return a promise that resolves with an audioBuffer of the recording', () => {
-    const piece = () => Promise.resolve(noop);
-    return webRecorder(piece).then(recording =>
-      expect(recording).to.be.an.instanceof(Blob)
+    return new Promise(resolve =>
+      webRecorder(piece, pieceConfig).subscribe(() => {
+        resolve();
+      })
     );
   });
-  it('should call the cleanup function', () => {
-    const cleanup = () => {
-      cleanup.called = true;
+  it('should return a promise that resolves with a Blob of the recording', () => {
+    const piece = () => Promise.resolve(noop);
+    return new Promise(resolve =>
+      webRecorder(piece).subscribe(recording => {
+        expect(recording).to.be.an.instanceof(Blob);
+        resolve();
+      })
+    );
+  });
+  it('should call the cleanUp function', () => {
+    const cleanUp = () => {
+      cleanUp.called = true;
     };
-    const piece = () => Promise.resolve(cleanup);
-    return webRecorder(piece).then(() => {
-      expect(cleanup).to.have.property('called', true);
+    const piece = () => Promise.resolve(cleanUp);
+    return new Promise(resolve => {
+      webRecorder(piece)
+        .subscribe(() => {
+          // nah
+        })
+        .add(() => {
+          expect(cleanUp).to.have.property('called', true);
+          resolve();
+        });
+    });
+  });
+  it('should pass multiple blobs if timeslice < lengthS * 1000', () => {
+    const piece = ({ destination }) => {
+      const oscillator = new Tone.Oscillator().connect(destination);
+      oscillator.start();
+      return Promise.resolve(() => oscillator.dispose());
+    };
+    return new Promise(resolve => {
+      const blobs = [];
+      webRecorder(piece, {}, { lengthS: 1, timeslice: 100 })
+        .subscribe(blob => {
+          blobs.push(blob);
+        })
+        .add(() => {
+          expect(blobs.length).to.be.greaterThan(1);
+          resolve();
+        });
     });
   });
 });

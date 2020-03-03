@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/generative-music/web-recorder#readme",
   "peerDependencies": {
+    "rxjs": "^6.5.4",
     "tone": "^13.8.25"
   },
   "devDependencies": {
@@ -34,6 +35,7 @@
     "mocha": "^7.0.1",
     "prettier": "^1.19.1",
     "rollup": "^1.31.1",
+    "rxjs": "^6.5.4",
     "tone": "^13.8.25"
   }
 }
