@@ -1,7 +1,7 @@
 'use strict';
 
 const config = {
-  input: './src/web-recorder.js',
+  input: './src/recorder.js',
   output: [
     {
       format: 'esm',

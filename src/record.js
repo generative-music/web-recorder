@@ -2,7 +2,7 @@ import Tone from 'tone';
 import { fromEvent, from } from 'rxjs';
 import { switchMap, finalize, takeUntil, map } from 'rxjs/operators';
 
-const webRecorder = (
+const record = (
   piece,
   pieceConfig = {},
   recordingConfig = {
@@ -12,6 +12,7 @@ const webRecorder = (
   },
   videoTracks = []
 ) => {
+  const { lengthS, fadeInS, fadeOutS, timeslice } = recordingConfig;
   Object.assign(pieceConfig, { audioContext: Tone.Context });
   if (Tone.context !== pieceConfig.audioContext) {
     Tone.setContext(pieceConfig);
@@ -20,25 +21,39 @@ const webRecorder = (
   videoTracks.forEach(videoTrack => {
     streamDestination.stream.addTrack(videoTrack);
   });
-  const masterVol = new Tone.Volume().connect(streamDestination);
-  const { lengthS } = recordingConfig;
+  const masterGain = new Tone.Gain(fadeInS ? 0 : 1).connect(streamDestination);
   const recorder = new MediaRecorder(streamDestination.stream);
   let cleanUp;
   return from(
     piece(
       Object.assign({}, pieceConfig, {
-        destination: masterVol,
+        destination: masterGain,
       })
     )
   ).pipe(
     switchMap(cleanUpFn => {
       cleanUp = cleanUpFn;
+      if (fadeInS) {
+        masterGain.gain.linearRampToValueAtTime(
+          1,
+          Tone.context.currentTime + fadeInS
+        );
+      }
+      if (fadeOutS && fadeOutS >= lengthS) {
+        const fadeOutStartTime = lengthS - fadeOutS;
+        Tone.Transport.scheduleOnce(() => {
+          masterGain.gain.linearRampToValueAtTime(
+            0,
+            Tone.context.currentTime + fadeOutS
+          );
+        }, fadeOutStartTime);
+      }
       if (lengthS < Infinity) {
         Tone.Transport.scheduleOnce(() => {
           recorder.stop();
         }, lengthS);
       }
-      recorder.start(recordingConfig.timeslice);
+      recorder.start(timeslice);
       Tone.Transport.start();
       Tone.context.resume();
       return fromEvent(recorder, 'dataavailable').pipe(
@@ -55,9 +70,9 @@ const webRecorder = (
       if (cleanUp) {
         cleanUp();
       }
-      masterVol.dispose();
+      masterGain.dispose();
     })
   );
 };
 
-export default webRecorder;
+export default record;
