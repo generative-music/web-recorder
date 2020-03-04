@@ -1,2 +1,5 @@
-# web-recorder
-A library for recording generative music pieces in the browser
+# @generative-music/web-recorder
+
+A library for recording web audio systems.
+
+## Usage

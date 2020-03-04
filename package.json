@@ -2,10 +2,18 @@
   "name": "@generative-music/web-recorder",
   "version": "0.0.0",
   "description": "A library for recording web audio systems",
-  "main": "index.js",
+  "main": "dist/web-recorder.cjs.js",
+  "module": "dist/web-recorder.esm.js",
+  "files": [
+    "dist/web-recorder.esm.js"
+  ],
   "scripts": {
     "test": "karma start",
-    "test:watch": "karma start --no-single-run"
+    "test:watch": "karma start --no-single-run",
+    "lint": "eslint .",
+    "build": "rollup -c",
+    "preversion": "npm run lint && npm run test && npm run build",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
