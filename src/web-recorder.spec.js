@@ -14,10 +14,13 @@ describe('webRecorder', () => {
       return Promise.resolve(noop);
     };
     return new Promise(resolve =>
-      webRecorder(piece).subscribe(() => {
-        expect(piece).to.have.property('called', true);
-        resolve();
-      })
+      webRecorder(piece)
+        .subscribe(() => {
+          expect(piece).to.have.property('called', true);
+        })
+        .add(() => {
+          resolve();
+        })
     );
   });
   it('should pass pieceConfig to the piece', () => {
@@ -32,18 +35,25 @@ describe('webRecorder', () => {
       return Promise.resolve(noop);
     };
     return new Promise(resolve =>
-      webRecorder(piece, pieceConfig).subscribe(() => {
-        resolve();
-      })
+      webRecorder(piece, pieceConfig)
+        .subscribe(() => {
+          // nah
+        })
+        .add(() => {
+          resolve();
+        })
     );
   });
   it('should return a promise that resolves with a Blob of the recording', () => {
     const piece = () => Promise.resolve(noop);
     return new Promise(resolve =>
-      webRecorder(piece).subscribe(recording => {
-        expect(recording).to.be.an.instanceof(Blob);
-        resolve();
-      })
+      webRecorder(piece)
+        .subscribe(recording => {
+          expect(recording).to.be.an.instanceof(Blob);
+        })
+        .add(() => {
+          resolve();
+        })
     );
   });
   it('should call the cleanUp function', () => {

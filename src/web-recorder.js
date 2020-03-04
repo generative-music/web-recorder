@@ -56,7 +56,6 @@ const webRecorder = (
         cleanUp();
       }
       masterVol.dispose();
-      streamDestination.dispose();
     })
   );
 };
