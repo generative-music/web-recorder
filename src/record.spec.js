@@ -2,7 +2,7 @@
 
 import expect from 'chai/interface/expect';
 import Tone from 'tone';
-import webRecorder from './recorder';
+import webRecorder from './record';
 
 //eslint-disable-next-line no-empty-function
 const noop = () => {};
