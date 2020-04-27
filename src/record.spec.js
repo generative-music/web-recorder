@@ -90,4 +90,20 @@ describe('recorder', () => {
         });
     });
   });
+  it('should change pass Tone.context to the recorded piece', () => {
+    const piece = ({ audioContext }) => {
+      expect(audioContext).to.equal(Tone.context);
+      piece.called = true;
+      return Promise.resolve(noop);
+    };
+    return new Promise(resolve =>
+      webRecorder(piece)
+        .subscribe(() => {
+          expect(piece).to.have.property('called', true);
+        })
+        .add(() => {
+          resolve();
+        })
+    );
+  });
 });

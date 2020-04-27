@@ -13,10 +13,7 @@ const record = (
   videoTracks = []
 ) => {
   const { lengthS, fadeInS, fadeOutS, timeslice } = recordingConfig;
-  Object.assign(pieceConfig, { audioContext: Tone.Context });
-  if (Tone.context !== pieceConfig.audioContext) {
-    Tone.setContext(pieceConfig);
-  }
+  Object.assign(pieceConfig, { audioContext: Tone.context });
   const streamDestination = Tone.context.createMediaStreamDestination();
   videoTracks.forEach(videoTrack => {
     streamDestination.stream.addTrack(videoTrack);
