@@ -36,8 +36,8 @@ const record = (
           Tone.context.currentTime + fadeInS
         );
       }
-      if (fadeOutS && fadeOutS >= lengthS) {
-        const fadeOutStartTime = lengthS - fadeOutS;
+      if (fadeOutS) {
+        const fadeOutStartTime = Math.max(lengthS - fadeOutS, 0);
         Tone.Transport.scheduleOnce(() => {
           masterGain.gain.linearRampToValueAtTime(
             0,
