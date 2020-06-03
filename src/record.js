@@ -31,6 +31,7 @@ const record = (
     switchMap(cleanUpFn => {
       cleanUp = cleanUpFn;
       if (fadeInS) {
+        masterGain.gain.setValueAtTime(0, Tone.context.currentTime);
         masterGain.gain.linearRampToValueAtTime(
           1,
           Tone.context.currentTime + fadeInS
@@ -38,11 +39,10 @@ const record = (
       }
       if (fadeOutS) {
         const fadeOutStartTime = Math.max(lengthS - fadeOutS, 0);
-        Tone.Transport.scheduleOnce(() => {
-          masterGain.gain.linearRampToValueAtTime(
-            0,
-            Tone.context.currentTime + fadeOutS
-          );
+        Tone.Transport.scheduleOnce(time => {
+          masterGain.gain.cancelScheduledValues(time);
+          masterGain.gain.setValueAtTime(masterGain.gain.value, time);
+          masterGain.gain.linearRampToValueAtTime(0, time + fadeOutS);
         }, fadeOutStartTime);
       }
       if (lengthS < Infinity) {
