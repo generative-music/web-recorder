@@ -1,7 +1,7 @@
 'use strict';
 
 const config = {
-  input: './src/record.js',
+  input: './src/index.js',
   output: [
     {
       format: 'esm',
