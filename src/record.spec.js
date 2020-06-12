@@ -1,6 +1,3 @@
-/* eslint-env mocha */
-
-import expect from 'chai/interface/expect';
 import Tone from 'tone';
 import webRecorder from './record';
 
