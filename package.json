@@ -1,6 +1,6 @@
 {
   "name": "@generative-music/web-recorder",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "A library for recording web audio systems",
   "main": "dist/web-recorder.cjs.js",
   "module": "dist/web-recorder.esm.js",
