@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - None
 
+## [1.0.0] - 2020-07-12
+
+### Changed
+
+- Use new piece interface v4
+
 ## [0.2.0] - 2020-06-11
 
 ### Added
@@ -33,7 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Pass an actual Tone Context implementation to the recorded piece.
 
-[unreleased]: https://github.com/generative-music/web-recorder/compare/v0.2.0...HEAD
+[unreleased]: https://github.com/generative-music/web-recorder/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/generative-music/web-recorder/compare/v0.2.0...v1.0.0
 [0.2.0]: https://github.com/generative-music/web-recorder/compare/v0.1.3...v0.2.0
 [0.1.3]: https://github.com/generative-music/web-recorder/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/generative-music/web-recorder/compare/v0.1.1...v0.1.2

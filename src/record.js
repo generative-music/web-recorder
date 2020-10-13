@@ -1,9 +1,9 @@
-import Tone from 'tone';
+import * as Tone from 'tone';
 import { fromEvent, from } from 'rxjs';
 import { switchMap, finalize, takeUntil, map } from 'rxjs/operators';
 
 const record = (
-  piece,
+  activate,
   pieceConfig = {},
   recordingConfig = {
     lengthS: 0,
@@ -13,23 +13,25 @@ const record = (
   videoTracks = []
 ) => {
   const { lengthS, fadeInS, fadeOutS, timeslice } = recordingConfig;
-  Object.assign(pieceConfig, { audioContext: Tone.context });
   const streamDestination = Tone.context.createMediaStreamDestination();
   videoTracks.forEach(videoTrack => {
     streamDestination.stream.addTrack(videoTrack);
   });
   const masterGain = new Tone.Gain(fadeInS ? 0 : 1).connect(streamDestination);
   const recorder = new MediaRecorder(streamDestination.stream);
-  let cleanUp;
+  const cleanUpFns = [];
   return from(
-    piece(
-      Object.assign({}, pieceConfig, {
+    activate(
+      Object.assign(pieceConfig, {
+        context: Tone.context,
         destination: masterGain,
       })
     )
   ).pipe(
-    switchMap(cleanUpFn => {
-      cleanUp = cleanUpFn;
+    switchMap(([deactivate, schedule]) => {
+      const end = schedule();
+      cleanUpFns.push(end);
+      cleanUpFns.push(deactivate);
       if (fadeInS) {
         masterGain.gain.setValueAtTime(0, Tone.context.currentTime);
         masterGain.gain.linearRampToValueAtTime(
@@ -64,8 +66,8 @@ const record = (
       }
       Tone.Transport.stop();
       Tone.Transport.cancel();
-      if (cleanUp) {
-        cleanUp();
+      if (cleanUpFns.length > 0) {
+        cleanUpFns.splice(0, cleanUpFns.length).forEach(fn => fn());
       }
       masterGain.dispose();
     })

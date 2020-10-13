@@ -1,19 +1,27 @@
-import Tone from 'tone';
+import * as Tone from 'tone';
 import webRecorder from './record';
 
-//eslint-disable-next-line no-empty-function
-const noop = () => {};
+const noop = () => {
+  /* do nothing */
+};
+
+const getNoop = () => noop;
 
 describe('recorder', () => {
   it('should create the piece', () => {
+    const mockSchedule = () => {
+      mockSchedule.called = true;
+      return noop;
+    };
     const piece = () => {
       piece.called = true;
-      return Promise.resolve(noop);
+      return Promise.resolve([noop, mockSchedule]);
     };
     return new Promise(resolve =>
       webRecorder(piece)
         .subscribe(() => {
           expect(piece).to.have.property('called', true);
+          expect(mockSchedule.called).to.be.true;
         })
         .add(() => {
           resolve();
@@ -29,7 +37,7 @@ describe('recorder', () => {
       Object.keys(pieceConfig).forEach(key => {
         expect(config).to.have.property(key, pieceConfig[key]);
       });
-      return Promise.resolve(noop);
+      return Promise.resolve([noop, getNoop]);
     };
     return new Promise(resolve =>
       webRecorder(piece, pieceConfig)
@@ -42,7 +50,7 @@ describe('recorder', () => {
     );
   });
   it('should return a promise that resolves with a Blob of the recording', () => {
-    const piece = () => Promise.resolve(noop);
+    const piece = () => Promise.resolve([noop, getNoop]);
     return new Promise(resolve =>
       webRecorder(piece)
         .subscribe(recording => {
@@ -53,18 +61,23 @@ describe('recorder', () => {
         })
     );
   });
-  it('should call the cleanUp function', () => {
-    const cleanUp = () => {
-      cleanUp.called = true;
+  it('should call the end and deactivate functions', () => {
+    const mockEnd = () => {
+      mockEnd.called = true;
     };
-    const piece = () => Promise.resolve(cleanUp);
+    const mockSchedule = () => mockEnd;
+    const mockDeactivate = () => {
+      mockDeactivate.called = true;
+    };
+    const piece = () => Promise.resolve([mockDeactivate, mockSchedule]);
     return new Promise(resolve => {
       webRecorder(piece)
         .subscribe(() => {
           // nah
         })
         .add(() => {
-          expect(cleanUp).to.have.property('called', true);
+          expect(mockEnd).to.have.property('called', true);
+          expect(mockDeactivate).to.have.property('called', true);
           resolve();
         });
     });
@@ -73,7 +86,7 @@ describe('recorder', () => {
     const piece = ({ destination }) => {
       const oscillator = new Tone.Oscillator().connect(destination);
       oscillator.start();
-      return Promise.resolve(() => oscillator.dispose());
+      return Promise.resolve([() => oscillator.dispose(), getNoop]);
     };
     return new Promise(resolve => {
       const blobs = [];
@@ -87,11 +100,11 @@ describe('recorder', () => {
         });
     });
   });
-  it('should change pass Tone.context to the recorded piece', () => {
-    const piece = ({ audioContext }) => {
-      expect(audioContext).to.equal(Tone.context);
+  it('should pass Tone.context to the recorded piece', () => {
+    const piece = ({ context }) => {
+      expect(context).to.equal(Tone.context);
       piece.called = true;
-      return Promise.resolve(noop);
+      return Promise.resolve([noop, getNoop]);
     };
     return new Promise(resolve =>
       webRecorder(piece)
