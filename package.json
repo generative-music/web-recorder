@@ -27,7 +27,7 @@
   "homepage": "https://github.com/generative-music/web-recorder#readme",
   "peerDependencies": {
     "rxjs": "^6.5.4",
-    "tone": "^13.8.25"
+    "tone": "^14.7.58"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.2",
