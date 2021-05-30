@@ -1,6 +1,18 @@
 import * as Tone from 'tone';
 import { fromEvent, from } from 'rxjs';
-import { switchMap, finalize, takeUntil, map } from 'rxjs/operators';
+import { switchMap, finalize, takeWhile, map } from 'rxjs/operators';
+import {
+  MediaRecorder as ExtendableMediaRecorder,
+  isSupported,
+  register,
+} from 'extendable-media-recorder';
+import { connect } from 'extendable-media-recorder-wav-encoder';
+
+const ready = isSupported().then(result =>
+  result
+    ? connect().then(register)
+    : Promise.reject(new Error('ExtendableMediaRecorder is not supported'))
+);
 
 const record = (
   activate,
@@ -9,23 +21,35 @@ const record = (
     lengthS: 0,
     fadeInS: 0,
     fadeOutS: 0,
+    MediaRecorder: window.MediaRecorder,
+    mimeType: 'audio/wav',
   },
   videoTracks = []
 ) => {
-  const { lengthS, fadeInS, fadeOutS, timeslice } = recordingConfig;
+  const {
+    lengthS,
+    fadeInS,
+    fadeOutS,
+    timeslice,
+    mimeType = 'audio/wav',
+  } = recordingConfig;
   const streamDestination = Tone.context.createMediaStreamDestination();
   videoTracks.forEach(videoTrack => {
     streamDestination.stream.addTrack(videoTrack);
   });
   const masterGain = new Tone.Gain(fadeInS ? 0 : 1).connect(streamDestination);
-  const recorder = new MediaRecorder(streamDestination.stream);
+  const recorder = new ExtendableMediaRecorder(streamDestination.stream, {
+    mimeType,
+  });
   const cleanUpFns = [];
   return from(
-    activate(
-      Object.assign(pieceConfig, {
-        context: Tone.context,
-        destination: masterGain,
-      })
+    ready.then(() =>
+      activate(
+        Object.assign(pieceConfig, {
+          context: Tone.context,
+          destination: masterGain,
+        })
+      )
     )
   ).pipe(
     switchMap(([deactivate, schedule]) => {
@@ -57,13 +81,10 @@ const record = (
       Tone.context.resume();
       return fromEvent(recorder, 'dataavailable').pipe(
         map(({ data }) => data),
-        takeUntil(fromEvent(recorder, 'stop'))
+        takeWhile(() => recorder.state !== 'inactive')
       );
     }),
     finalize(() => {
-      if (recorder.state !== 'inactive') {
-        recorder.stop();
-      }
       Tone.Transport.stop();
       Tone.Transport.cancel();
       if (cleanUpFns.length > 0) {

@@ -8,7 +8,7 @@ This package exports a function which accepts a [`Piece`] and optionally a `piec
 
 ### `record()`
 
-A function which creates a recording of a given `Piece` and returns an [RxJS Subscribable](https://rxjs-dev.firebaseapp.com/api/index/interface/Subscribable) object that produces one or more [`Blob`] objects containing the recording data.
+The default export of this package is a function which creates a recording of a given `Piece` and returns an [RxJS Subscribable](https://rxjs-dev.firebaseapp.com/api/index/interface/Subscribable) object that produces one or more [`Blob`] objects containing the recording data.
 
 #### Syntax
 
@@ -26,27 +26,29 @@ record(piece, pieceConfig, recordingConfig, videoTracks).subscribe(blob => {
   - **lengthS** _(Optional)_ - A `number` specifying the length, in seconds, of the recording. This can be set to `Infinity` to record indefinitely. The default value is `0`.
   - **fadeInS** _(Optional)_ - A `number` specifying the length, in seconds, to fade in the audio at the beginning of the recording. The default value is `0`.
   - **fadeOutS** _(Optional)_ - A `number` specifying the length, in seconds, to fade out the audio at the end of the recording. The default value is `0`.
-  - **timeslice** _(Optional)_ - A `number` specifying the length, in milliseconds, to record into each `Blob`. See the `timeslice` parameter of [`MediaRecorder.start()`](https://developer.mozilla.org/docs/Web/API/MediaRecorder/start).### Checking for support
-    This example checks to ensure this library is supported before attempting to record
+  - **timeslice** _(Optional)_ - A `number` specifying the length, in milliseconds, to record into each `Blob`. See the `timeslice` parameter of [`MediaRecorder.start()`](https://developer.mozilla.org/docs/Web/API/MediaRecorder/start).
+  - **mimeType** _(Optional)_ - A MIME type to use for the recording. Acceptable values vary per browser. The default value is `'audio/wav'`.
 - **videoTracks** _(Optional)_ - An array of [`MediaStreamTrack`] objects to be mixed with the audio and recorded.
 
 ##### Return value
 
 An [RxJS `Subscribable`](https://rxjs-dev.firebaseapp.com/api/index/interface/Subscribable) object which produces one or more [`Blob`] objects that contain the recording data. If `recordingConfig.timeslice` was defined, the recording will be split into separate `Blob` objects of the specified length (see above). Otherwise, the entire recording will be returned as a single `Blob`. Each subscription yields a separate recording.
 
-### `record.isSupported`
+### `checkSupport()`
 
-A read-only property of the `record` function which indicates whether recording is supported by the environment.
+`checkSupport` is a named export from this package which can be used to determine whether recording is supported by the environment.
 
 #### Syntax
 
 ```javascript
-const isSupported = record.isSupported;
+checkSupport.then(isSupported => {
+  // do something with the result
+});
 ```
 
-##### Value
+##### Return Value
 
-A `Boolean` with a value of `true` if recording is supported by the environment or `false` otherwise.
+A `Promise` which resolves to `true` if recording is supported by the environment or `false` otherwise.
 
 #### Example
 
@@ -91,14 +93,16 @@ record(piece, {}, { lengthS: Infinity, timeslice: 1000 }).subscribe(blob => {
 This example checks whether `record` is supported and logs the result.
 
 ```javascript
-import record from '@generative-music/web-recorder';
+import record, { checkSupport } from '@generative-music/web-recorder';
 import piece from './some-piece';
 
-if (record.isSupported) {
-  console.log('Recording is supported; okay to call record()');
-} else {
-  console.log('Recording is NOT supported');
-}
+checkSupport().then(isSupported => {
+  if (isSupported) {
+    console.log('Recording is supported; okay to call record()');
+  } else {
+    console.log('Recording is NOT supported');
+  }
+});
 ```
 
 ### Custom piece configuration

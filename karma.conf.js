@@ -1,6 +1,6 @@
 'use strict';
 
-const resolve = require('@rollup/plugin-node-resolve');
+const { nodeResolve: resolve } = require('@rollup/plugin-node-resolve');
 const commonJs = require('@rollup/plugin-commonjs');
 
 // Karma configuration

@@ -1,6 +1,2 @@
-import record from './record';
-import isSupported from './is-supported';
-
-export default Object.defineProperty(record, 'isSupported', {
-  value: isSupported,
-});
+export { default } from './record';
+export { default as checkSupport } from './check-support';

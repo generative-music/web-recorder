@@ -1,11 +1,5 @@
 {
-  "env": {
-    "node": false,
-    "browser": true
-  },
-  "parserOptions": {
-    "sourceType": "module"
-  },
+  "extends": "@alexbainter/eslint-config/browser",
   "overrides": [
     {
       "files": ["**/*.spec.js"],
@@ -14,9 +8,6 @@
       },
       "globals": {
         "expect": "readonly"
-      },
-      "rules": {
-        "no-unused-expressions": 0
       }
     }
   ]
